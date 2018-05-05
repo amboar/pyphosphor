@@ -1,7 +1,6 @@
 import unittest
 
 from .pathtree import PathTree
-from pprint import pprint
 
 class PathTreeTest(unittest.TestCase):
     def test_set_depth_1(self):
@@ -305,3 +304,25 @@ class PathTreeTest(unittest.TestCase):
         pt['/a/c'] = None
         pt['/b'] = 4
         self.assertEquals(set([('/a/b', 2)]), set(pt.dataitems(subtree='/a', depth=1)))
+
+import timeit
+import sys
+
+def stress(pt, k):
+    pt[k] = 1
+    pt[k] = pt[k] + 1
+    del pt[k]
+
+tsetup = """\
+from __main__ import stress
+from obmc.utils.pathtree import PathTree
+pt = PathTree()
+key = '/' + '/'.join(['a'] * {})
+"""
+
+if __name__ == "__main__":
+    for depth in range(1, 11):
+        ftsetup = tsetup.format(depth)
+        stmt = "stress(pt, key)"
+        time = timeit.timeit(stmt, setup=ftsetup)
+        print("{}: {}".format(depth, time))
